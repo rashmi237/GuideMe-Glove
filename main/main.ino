@@ -44,16 +44,15 @@ void loop() {
   // left
 
   if(!(distance_left==501)){ //Checks if singal is recieved
-    Serial.print("Left: ");
     Serial.print(distance_left);
+    Serial.print(",");
   }
   else{
-    Serial.print("Left: No Signal");
+    Serial.print("No Signal,");
   }
 
   // mid
   if(!(distance_mid==501)){ //Checks if singal is recieved
-    Serial.print(" Middle: ");
     Serial.print(distance_mid);
   }
   else{
@@ -68,8 +67,5 @@ void loop() {
   else{
     Serial.println(" Right: No Signal");
   }
-
-
-
 
 }

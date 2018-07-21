@@ -29,12 +29,12 @@ void loop()
 
 
 for (int x = 0; x < sizeof(levels); x++){
-  analogWrite(leftMotorPin,level[x]);
-  analogWrite(midMotorPin,level[x]);
-  analogWrite(rightMotorPin,level[x]);
+  analogWrite(leftMotorPin,levels[x]);
+  analogWrite(midMotorPin,levels[x]);
+  analogWrite(rightMotorPin,levels[x]);
   delay(1000);
 }
 
-analogWrite(motorPin,0);    // 0% duty cycle (off)
+analogWrite(leftMotorPin,0);    // 0% duty cycle (off)
 delay(2000);
 }
