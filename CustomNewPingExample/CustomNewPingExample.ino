@@ -11,16 +11,19 @@
 
 
 // US RIGHT
-#define TRIGGER_PIN_RIGHT  6  // Arduino pin tied to trigger pin on the ultrasonic sensor.
-#define ECHO_PIN_RIGHT     5  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define TRIGGER_PIN_RIGHT  4  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN_RIGHT     3  // Arduino pin tied to echo pin on the ultrasonic sensor.
 #define MAX_DISTANCE_RIGHT 400 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
 // US MID
-#define TRIGGER_PIN_MID  4  // Arduino pin tied to trigger pin on the ultrasonic sensor.
-#define ECHO_PIN_MID     3  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define TRIGGER_PIN_MID  6  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN_MID     5  // Arduino pin tied to echo pin on the ultrasonic sensor.
 #define MAX_DISTANCE_MID 400 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
-int distance;
+int distance_left;
+int distance_mid;
+int distance_right;
+
 
 NewPing US_LEFT(TRIGGER_PIN_LEFT, ECHO_PIN_LEFT, MAX_DISTANCE_LEFT); // NewPing setup of pins and maximum distance - US1
 NewPing US_RIGHT(TRIGGER_PIN_RIGHT, ECHO_PIN_RIGHT, MAX_DISTANCE_RIGHT); // NewPing setup of pins and maximum distance - US2
@@ -31,19 +34,42 @@ void setup() {
 }
 
 void loop() {
-  delay(50); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
+  delay(500); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
   Serial.print("Ping: ");
 
-  distance = sonar.ping_cm();
+  distance_left = US_LEFT.ping_cm();
+  distance_right = US_RIGHT.ping_cm();
+  distance_mid = US_MID.ping_cm();
 
-  if(!(distance==501)){ //Checks if singal is recieved
-    Serial.print(distance);
-    Serial.println("cm");
+  // left
 
-    distance = sonar.ping_cm();
+  if(!(distance_left==501)){ //Checks if singal is recieved
+    Serial.print("Left: ");
+    Serial.print(distance_left);
   }
   else{
-    Serial.println("No Signal");
+    Serial.print("Left: No Signal");
   }
+
+  // mid
+  if(!(distance_mid==501)){ //Checks if singal is recieved
+    Serial.print(" Middle: ");
+    Serial.print(distance_mid);
+  }
+  else{
+    Serial.print(" Middle: No Signal");
+  }
+
+  // RIGHT
+  if(!(distance_right==501)){ //Checks if singal is recieved
+    Serial.print(" Right: ");
+    Serial.println(distance_right);
+  }
+  else{
+    Serial.println(" Right: No Signal");
+  }
+
+
+
 
 }
