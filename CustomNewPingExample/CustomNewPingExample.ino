@@ -22,9 +22,9 @@
 
 int distance;
 
-NewPing US1(TRIGGER_PIN_, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance - US1
-NewPing US2(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance - US2
-NewPing US3(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance - US3
+NewPing US_LEFT(TRIGGER_PIN_LEFT, ECHO_PIN_LEFT, MAX_DISTANCE_LEFT); // NewPing setup of pins and maximum distance - US1
+NewPing US_RIGHT(TRIGGER_PIN_RIGHT, ECHO_PIN_RIGHT, MAX_DISTANCE_RIGHT); // NewPing setup of pins and maximum distance - US2
+NewPing US_MID(TRIGGER_PIN_MID, ECHO_PIN_MID, MAX_DISTANCE_MID); // NewPing setup of pins and maximum distance - US3
 
 void setup() {
   Serial.begin(115200); // Open serial monitor at 115200 baud to see ping results.
