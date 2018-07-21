@@ -36,7 +36,7 @@ void loop() {
 
   distance = sonar.ping_cm();
 
-  if(!(distance==500)){ //Checks if singal is recieved
+  if(!(distance==501)){ //Checks if singal is recieved
     Serial.print(distance);
     Serial.println("cm");
 

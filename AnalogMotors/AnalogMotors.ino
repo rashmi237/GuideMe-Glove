@@ -11,20 +11,28 @@
     side pins of the potentiometer go to +5V and grounds
   - LED connected from digital pin 9 to ground
 */
-const int motorPin = 3;
+const int leftMotorPin = 11;
+const int rightMotorPin = 9;
+const int midMotorPin = 10;
+
+int levels [5] = {0,100,150,200,255};
 
 void setup()
 {
-  pinMode(motorPin, OUTPUT);
+  pinMode(leftMotorPin, OUTPUT);
+  pinMode(rightMotorPin, OUTPUT);
+  pinMode(midMotorPin, OUTPUT);
 }
 
 void loop()
 {
 
-int levels
-for (int x = 0; x<255; x++){
-  analogWrite(motorPin,x);
-  delay(50);
+
+for (int x = 0; x < sizeof(levels); x++){
+  analogWrite(leftMotorPin,level[x]);
+  analogWrite(midMotorPin,level[x]);
+  analogWrite(rightMotorPin,level[x]);
+  delay(1000);
 }
 
 analogWrite(motorPin,0);    // 0% duty cycle (off)

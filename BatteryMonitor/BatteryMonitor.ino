@@ -14,4 +14,5 @@ void loop() {
   Serial.println(sensorValue);
   Serial.println(sensorValue * stepVolt);
   delay(500);
+  
 }
