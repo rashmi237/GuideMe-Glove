@@ -35,9 +35,6 @@ Serial.print("Size: ");
 Serial.println(arr_len(levels));
 
 for (int x = 0; x < arr_len(levels); x++){
-
-  Serial.println(x);
-  Serial.println(levels[x]);
   analogWrite(leftMotorPin,levels[x]);
   analogWrite(midMotorPin,levels[x]);
   analogWrite(rightMotorPin,levels[x]);
