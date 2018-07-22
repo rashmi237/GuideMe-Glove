@@ -30,9 +30,35 @@ int distance_left;
 int distance_mid;
 int distance_right;
 
+<<<<<<< HEAD
+=======
+//battery pin variables
+float stepVolt = 5.0 / 1024.0;
+int sensorPin = A5;    // select the input pin for the potentiometer
+//int sensorValue = 0;  // variable to store the value coming from the sensor
+
+
+>>>>>>> 1b354333dd6f44bc8d52a55cde469974ad213da2
 NewPing US_LEFT(TRIGGER_PIN_LEFT, ECHO_PIN_LEFT, MAX_DISTANCE_LEFT); // NewPing setup of pins and maximum distance - US1
 NewPing US_RIGHT(TRIGGER_PIN_RIGHT, ECHO_PIN_RIGHT, MAX_DISTANCE_RIGHT); // NewPing setup of pins and maximum distance - US2
 NewPing US_MID(TRIGGER_PIN_MID, ECHO_PIN_MID, MAX_DISTANCE_MID); // NewPing setup of pins and maximum distance - US3
+
+int BatteryMonitor(int sensorPin){
+	// read the value from the sensor:
+	int sensorValue = analogRead(sensorPin);
+
+	return sensorValue;
+}
+
+//https://arduino.stackexchange.com/questions/12915/timer-function-without-the-use-of-a-library
+bool timer(unsigned long &last_time, unsigned long period) {
+  unsigned long now = millis();
+  if (now - last_time >= period) {
+    last_time = now;
+    return true;
+  }
+  return false;
+}
 
 void setup() {
   Serial.begin(115200); // Open serial monitor at 115200 baud to see ping results.
@@ -42,6 +68,13 @@ void setup() {
 }
 
 void loop() {
+  static unsigned long previousMillis1;
+  
+  if(timer(previousMillis1, 6000)){
+	int sensorValue = BatteryMonitor(sensorPin);
+	Serial.println(sensorValue);
+	Serial.println(sensorValue * stepVolt);
+  } 
   delay(500); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
   Serial.print("Ping: ");
 
@@ -52,16 +85,15 @@ void loop() {
   // left
 
   if(!(distance_left==501)){ //Checks if singal is recieved
-    Serial.print("Left: ");
     Serial.print(distance_left);
+    Serial.print(",");
   }
   else{
-    Serial.print("Left: No Signal");
+    Serial.print("No Signal,");
   }
 
   // mid
   if(!(distance_mid==501)){ //Checks if singal is recieved
-    Serial.print(" Middle: ");
     Serial.print(distance_mid);
   }
   else{
