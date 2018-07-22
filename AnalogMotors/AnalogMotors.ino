@@ -11,14 +11,18 @@
     side pins of the potentiometer go to +5V and grounds
   - LED connected from digital pin 9 to ground
 */
+
+#define arr_len(x) (sizeof(x)/sizeof(int))
+
 const int leftMotorPin = 11;
 const int rightMotorPin = 9;
 const int midMotorPin = 10;
 
-int levels [5] = {0,100,150,200,255};
+int levels[] = {0,100,150,200,255};
 
 void setup()
 {
+  Serial.begin(9600);
   pinMode(leftMotorPin, OUTPUT);
   pinMode(rightMotorPin, OUTPUT);
   pinMode(midMotorPin, OUTPUT);
@@ -27,12 +31,18 @@ void setup()
 void loop()
 {
 
+Serial.print("Size: ");
+Serial.println(arr_len(levels));
 
-for (int x = 0; x < sizeof(levels); x++){
+for (int x = 0; x < arr_len(levels); x++){
+
+  Serial.println(x);
+  Serial.println(levels[x]);
   analogWrite(leftMotorPin,levels[x]);
   analogWrite(midMotorPin,levels[x]);
   analogWrite(rightMotorPin,levels[x]);
   delay(1000);
+  analogWrite(leftMotorPin,0);
 }
 
 analogWrite(leftMotorPin,0);    // 0% duty cycle (off)

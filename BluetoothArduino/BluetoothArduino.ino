@@ -8,7 +8,7 @@
 int data = 0;            //Variable for storing received data
 void setup()
 {
-    Serial.begin(9600);   //Sets the baud for serial data transmission                               
+    Serial.begin(9600);   //Sets the baud for serial data transmission
     pinMode(13, OUTPUT);  //Sets digital pin 13 as output pin
 }
 void loop()
@@ -17,7 +17,7 @@ void loop()
    {
       data = Serial.read();        //Read the incoming data & store into data
       Serial.println(data);          //Print Value inside data in Serial monitor
-              
+
       if(data == 1){              // Checks whether value of data is equal to 1
          digitalWrite(13, HIGH);
          Serial.println("ON if"); //If value is 1 then LED turns ON

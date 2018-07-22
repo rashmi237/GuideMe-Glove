@@ -25,7 +25,7 @@ int distance_mid;
 int distance_right;
 
 //battery pin variables
-float stepVolt = 5.0 / 1024.0;
+float stepVolt = 4.77 / 1024.0;
 int sensorPin = A5;    // select the input pin for the potentiometer
 //int sensorValue = 0;  // variable to store the value coming from the sensor
 
@@ -57,12 +57,12 @@ void setup() {
 
 void loop() {
   static unsigned long previousMillis1;
-  
+
   if(timer(previousMillis1, 6000)){
 	int sensorValue = BatteryMonitor(sensorPin);
 	Serial.println(sensorValue);
 	Serial.println(sensorValue * stepVolt);
-  } 
+  }
   delay(500); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
   Serial.print("Ping: ");
 
