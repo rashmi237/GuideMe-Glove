@@ -36,7 +36,7 @@ NewPing US_MID(TRIGGER_PIN_MID, ECHO_PIN_MID, MAX_DISTANCE_MID); // NewPing setu
 
 int BatteryMonitor(int sensorPin){
 	// read the value from the sensor:
-	sensorValue = analogRead(sensorPin);
+	int sensorValue = analogRead(sensorPin);
 
 	return sensorValue;
 }
@@ -59,7 +59,9 @@ void loop() {
   static unsigned long previousMillis1;
   
   if(timer(previousMillis1, 6000)){
-	BatteryMonitor(sensorPin);
+	int sensorValue = BatteryMonitor(sensorPin);
+	Serial.println(sensorValue);
+	Serial.println(sensorValue * stepVolt);
   } 
   delay(500); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
   Serial.print("Ping: ");
