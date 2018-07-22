@@ -28,7 +28,7 @@ void loop()
 {
 
 
-for (int x = 0; x < sizeof(levels); x++){
+for (int x = 0; x < sizeof(levels)/sizeof(int); x++){
   analogWrite(leftMotorPin,levels[x]);
   analogWrite(midMotorPin,levels[x]);
   analogWrite(rightMotorPin,levels[x]);
