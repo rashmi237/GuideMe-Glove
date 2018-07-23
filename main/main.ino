@@ -17,7 +17,7 @@
 #define TRIGGER_PIN_RIGHT  4  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN_RIGHT     3  // Arduino pin tied to echo pin on the ultrasonic sensor.
 
-int MAX_DISTANCE = 450; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm. Can be changed.
+int MAX_DISTANCE = 200; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm. Can be changed.
 
 //Ultrasonic sensor declaration
 NewPing US_LEFT(TRIGGER_PIN_LEFT, ECHO_PIN_LEFT, MAX_DISTANCE); // NewPing setup of pins and maximum distance - US1
@@ -40,7 +40,7 @@ float intensityFactor;
 //battery pin variables
 #define SENSOR_PIN  A5
 const float stepVolt = 4.77 / 1024.0;
-const int checkBatteryTime = 6000
+const int checkBatteryTime = 6000;
 
 //timer Varibales
 static unsigned long previousMillis1;
@@ -49,36 +49,26 @@ static unsigned long previousMillis1;
 //Filter constants
 const int MEDIAN_FILTER_WINDOW = 25;
 
+int inputValue;
+float medianLeft, medianMid, medianRight;
+float lpfMedian;
+int medianFilterIndex;
+float medianFilterLeft[MEDIAN_FILTER_WINDOW];
+float medianFilterMid[MEDIAN_FILTER_WINDOW];
+float medianFilterRight[MEDIAN_FILTER_WINDOW];
 
-//Filter variables
-int inputValue = 0;
-float median = 0;
-float lpfMedian = 0;
-float medianFilter[MEDIAN_FILTER_WINDOW];
-int medianFilterIndex = 0;
+//Bluetooth
+char* data;
 
+//Main Methods for main
+#define arr_len(x) (sizeof(x)/sizeof(int))
 
-
-
-
-
-
-
-
-
-//Methods
-
-
-// Calculate the median value of the input array
-float getMedian(float input[], int inputSize){
-// sort the inputs
-	float sorted[inputSize];
+float getMedian(float input[], int inputSize){ // Calculate the median value of the input array
+	float sorted[inputSize]; // sort the inputs
 	sortArray(input, inputSize);
-// median = middle value of sorted array
+
 	return input[inputSize/2];
 }
-
-
 
 float batteryMonitorVoltage(int sensorPin){
 	int sensorValue = analogRead(sensorPin);
@@ -127,27 +117,42 @@ void setup() {
   pinMode(MOTOR_PIN_MID, OUTPUT);
   pinMode(MOTOR_PIN_RIGHT, OUTPUT);
 
+	//Timer initialize
 	previousMillis1 = 0;
+
+	//Bluetooth
+	data = "";
+
+	//Median variable initialize
+	inputValue = 0;
+	medianLeft = 0;
+	medianMid = 0;
+	medianRight = 0;
+	lpfMedian = 0;
+	medianFilterIndex = 0;
 
 	// initialize medianFilter array
 	for (int i = 0; i < MEDIAN_FILTER_WINDOW; i++) {
-		medianFilter[i] = 0;
+		medianFilterLeft[i] = 0;
+		medianFilterMid[i] = 0;
+		medianFilterRight[i] = 0;
 	}
 }
 
-void loop()
+void loop(){
 
-	//Bluetooth
-	if(Serial.available() > 0)      // Send data only when you receive data:
-	{
+	//Bluetooth code
+	if(Serial.available() > 0){      // Send data only when you receive data:
 		 data = Serial.read();        //Read the incoming data & store into data
 		 Serial.println(data);          //Print Value inside data in Serial monitor
 
-		 if(data == 1){              // Checks whether value of data is equal to 1
-				Serial.println("ON if"); //If value is 1 then LED turns ON
+		 if(data =="V"){              // Checks whether value of data is equal to 1
+				Serial.println("Vibration input"); //If value is 1 then LED turns ON
 		 }
-		 if(data == 0)         //  Checks whether value of data is equal to 0
-				Serial.println("OFF if")    //If value is 0 then LED turns OFF
+
+		 if(data == "M"){         //  Checks whether value of data is equal to 0
+				Serial.println("Max distance input");    //If value is 0 then LED turns OFF
+			}
 	}
 
 	//Timer Code
@@ -157,44 +162,37 @@ void loop()
   }
 
 	//Ping Code
-	delay(100); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
-  Serial.print("Ping: ");
+	delay(75); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
+  Serial.print("Median Ping: ");
 
   distance_left = US_LEFT.ping_cm();
 	distance_mid = US_MID.ping_cm();
   distance_right = US_RIGHT.ping_cm();
 
-// -- Testing Filter
+	//Filter Code
+	//inputValue = distance_left;
+	medianFilterLeft[medianFilterIndex] = distance_left;
+	medianFilterMid[medianFilterIndex] = distance_mid;
+	medianFilterRight[medianFilterIndex] = distance_right;
 
-	inputValue = distance_left;
-	medianFilter[medianFilterIndex] = inputValue;
 	medianFilterIndex++;
 	if (medianFilterIndex >= MEDIAN_FILTER_WINDOW) {
 		medianFilterIndex = 0;
 	}
-	median = getMedian(medianFilter, MEDIAN_FILTER_WINDOW);
 
-	Serial.print("Unsmoothed: ");
-	Serial.print(distance_left);
-	Serial.print(", Median ");
-	Serial.println(median);
+	medianLeft = getMedian(medianFilterLeft, MEDIAN_FILTER_WINDOW);
+	medianMid = getMedian(medianFilterMid, MEDIAN_FILTER_WINDOW);
+	medianRight = getMedian(medianFilterRight, MEDIAN_FILTER_WINDOW);
 
+	//Motor settings
+  // Left motor
+	motorSetting(medianLeft, MOTOR_PIN_LEFT,1234);
 
-// -- Testing Filter
+  // Middle motor
+  motorSetting(medianMid,MOTOR_PIN_MID,1234);
 
+  // Right motor
+  motorSetting(medianRight,MOTOR_PIN_RIGHT,1234);
 
-
-
-
-
-
-  // Left Sensor
-	//motorSetting(distance_left, MOTOR_PIN_LEFT,1234);
-
-  // Middle Sensor
-  //motorSetting(distance_right,MOTOR_PIN_MID,1234);
-
-  // Right Sensor
-  //motorSetting(distance_right,MOTOR_PIN_RIGHT,1234);
-	//Serial.println();
+	Serial.println();
 }
