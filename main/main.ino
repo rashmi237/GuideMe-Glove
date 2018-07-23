@@ -34,17 +34,19 @@ int distance_right;
 #define MOTOR_PIN_RIGHT 9
 
 const int Motorlevels [] = {85,170,255};
+float intensityFactor;
 
 //battery pin variables
 #define SENSOR_PIN  A5
 const float stepVolt = 4.77 / 1024.0;
+const int checkBatteryTime = 6000
 
 //timer Varibales
 static unsigned long previousMillis1;
 
 //Methods
 float batteryMonitorVoltage(int sensorPin){
-	int sensorValue = analogRead(SENSOR_PIN);
+	int sensorValue = analogRead(sensorPin);
 
 	return sensorValue * stepVolt;
 }
@@ -59,7 +61,7 @@ bool timer(unsigned long &last_time, unsigned long period) {
   return false;
 }
 
-void motorSetting(int distance, int motorpin){
+void motorSetting(int distance, int motorpin, int intensity){
 
 	if(!(distance==501)){ //Checks if signal is recieved
     Serial.print(distance);
@@ -93,10 +95,23 @@ void setup() {
 	previousMillis1 = 0;
 }
 
-void loop() {
+void loop()
+
+	//Bluetooth
+	if(Serial.available() > 0)      // Send data only when you receive data:
+	{
+		 data = Serial.read();        //Read the incoming data & store into data
+		 Serial.println(data);          //Print Value inside data in Serial monitor
+
+		 if(data == 1){              // Checks whether value of data is equal to 1
+				Serial.println("ON if"); //If value is 1 then LED turns ON
+		 }
+		 if(data == 0)         //  Checks whether value of data is equal to 0
+				Serial.println("OFF if")    //If value is 0 then LED turns OFF
+	}
 
 	//Timer Code
-	if(timer(previousMillis1, 6000)){
+	if(timer(previousMillis1, checkBatteryTime)){
 		float BatteryValue = batteryMonitorVoltage(SENSOR_PIN);
 		Serial.println(BatteryValue);
   }
@@ -111,12 +126,12 @@ void loop() {
 
 
   // Left Sensor
-	motorSetting(distance_left, MOTOR_PIN_LEFT);
+	motorSetting(distance_left, MOTOR_PIN_LEFT,1234);
 
   // Middle Sensor
-  motorSetting(distance_right,MOTOR_PIN_MID);
+  motorSetting(distance_right,MOTOR_PIN_MID,1234);
 
   // Right Sensor
-  motorSetting(distance_right,MOTOR_PIN_RIGHT);
+  motorSetting(distance_right,MOTOR_PIN_RIGHT,1234);
 	Serial.println();
 }
