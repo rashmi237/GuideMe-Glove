@@ -58,7 +58,8 @@ float medianFilterMid[MEDIAN_FILTER_WINDOW];
 float medianFilterRight[MEDIAN_FILTER_WINDOW];
 
 //Bluetooth
-char* data;
+String data;
+
 int recvVibrationValue;
 int recvDetectionDistance;
 
@@ -153,9 +154,9 @@ void loop(){
 		 if(data.indexOf("v") > 0){              // Checks whether value of data is equal to 1
 			 	data.remove(0, 1);
 				recvVibrationValue = data.toInt();
-				if (recvVibrationValue == 0) {intensityFactor = 0.33}
-				if (recvVibrationValue == 1) {intensityFactor = 0.66}
-				if (recvVibrationValue == 2) {intensityFactor = 1.00}
+				if (recvVibrationValue == 0) {intensityFactor = 0.33;}
+				if (recvVibrationValue == 1) {intensityFactor = 0.66;}
+				if (recvVibrationValue == 2) {intensityFactor = 1.00;}
 				Serial.println("Vibration input"); //If value is 1 then LED turns ON
 		 }
 
