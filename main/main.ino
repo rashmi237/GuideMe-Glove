@@ -53,6 +53,7 @@ const float LPF_ALPHA = 0.05f;
 
 int inputValue;
 float medianLeft, medianMid, medianRight;
+float lpfMedianLeft, lpfMedianMid, lpfMedianRight;
 float lpfMedian;
 int medianFilterIndex;
 float medianFilterLeft[MEDIAN_FILTER_WINDOW];
@@ -133,7 +134,9 @@ void setup() {
 	medianLeft = 0;
 	medianMid = 0;
 	medianRight = 0;
-	lpfMedian = 0;
+	lpfMedianLeft = 0;
+	lpfMedianRight = 0;
+	lpfMedianMid = 0;
 	medianFilterIndex = 0;
 	intensityFactor = 1;
 	MAX_DISTANCE = 200;
@@ -195,38 +198,42 @@ void loop(){
 		medianFilterIndex = 0;
 	}
 
-
-	//Serial.print("Unsmoothed: ");
-	//Serial.print(distance_left);
-	//Serial.print(", Median: ");
-	//Serial.print(median);
-
-// -- LPF --
-	//lpfValue = lpfValue + LPF_ALPHA * (inputValue - lpfValue);
-	//Serial.print(", LPF: ");
-	//Serial.print(lpfValue);
-
-// -- LPF w/ Median --
-	//lpfMedian = lpfMedian + LPF_ALPHA * (median - lpfMedian);
-	//Serial.print(", LPFMedian: ");
-	//Serial.println(lpfMedian);
-
-
-// -- Testing Filter
-
 	medianLeft = getMedian(medianFilterLeft, MEDIAN_FILTER_WINDOW);
 	medianMid = getMedian(medianFilterMid, MEDIAN_FILTER_WINDOW);
 	medianRight = getMedian(medianFilterRight, MEDIAN_FILTER_WINDOW);
 
+	// Serial.print("Unsmoothed: ");
+	// Serial.print(distance_left);
+	// Serial.print(", Median: ");
+	// Serial.print(median);
+
+// -- LPF --
+	// lpfValue = lpfValue + LPF_ALPHA * (inputValue - lpfValue);
+	// Serial.print(", LPF: ");
+	// Serial.print(lpfValue);
+
+// -- LPF w/ Median --
+	lpfMedianLeft = lpfMedianLeft + LPF_ALPHA * (medianLeft - lpfMedianLeft);
+	lpfMedianMid = lpfMedianMid + LPF_ALPHA * (medianMid - lpfMedianMid);
+	lpfMedianRight = lpfMedianRight + LPF_ALPHA * (medianRight - lpfMedianRight);
+
+	// Serial.print(", LPFMedian: ");
+	// Serial.println(lpfMedian);
+
+
+// -- Testing Filter
+
+
+
 	//Motor settings
   // Left motor
-	motorSetting(medianLeft, MOTOR_PIN_LEFT,intensityFactor);
+	motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT,intensityFactor);
 
   // Middle motor
-  motorSetting(medianMid,MOTOR_PIN_MID,intensityFactor);
+  motorSetting(lpfMedianMid,MOTOR_PIN_MID,intensityFactor);
 
   // Right motor
-  motorSetting(medianRight,MOTOR_PIN_RIGHT,intensityFactor);
+  motorSetting(lpfMedianRight,MOTOR_PIN_RIGHT,intensityFactor);
 
 	Serial.println();
 }
