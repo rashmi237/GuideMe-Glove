@@ -17,7 +17,7 @@
 #define TRIGGER_PIN_RIGHT  4  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN_RIGHT     3  // Arduino pin tied to echo pin on the ultrasonic sensor.
 
-int MAX_DISTANCE; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm. Can be changed.
+int MAX_DISTANCE =400; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm. Can be changed.
 
 //Ultrasonic sensor declaration
 NewPing US_LEFT(TRIGGER_PIN_LEFT, ECHO_PIN_LEFT, MAX_DISTANCE); // NewPing setup of pins and maximum distance - US1
@@ -139,7 +139,7 @@ void setup() {
 	lpfMedianMid = 0;
 	medianFilterIndex = 0;
 	intensityFactor = 1;
-	MAX_DISTANCE = 200;
+	MAX_DISTANCE = 400;
 
 	// initialize medianFilter array
 	for (int i = 0; i < MEDIAN_FILTER_WINDOW; i++) {
@@ -205,7 +205,7 @@ void loop(){
 	medianLeft = getMedian(medianFilterLeft, MEDIAN_FILTER_WINDOW);
 	medianMid = getMedian(medianFilterMid, MEDIAN_FILTER_WINDOW);
 	medianRight = getMedian(medianFilterRight, MEDIAN_FILTER_WINDOW);
-
+	// Serial.print(distance_left);
 	// Serial.print("Unsmoothed: ");
 	// Serial.print(distance_left);
 	// Serial.print(", Median: ");
@@ -231,13 +231,13 @@ void loop(){
 
 	//Motor settings
   // Left motor
-	motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT,intensityFactor);
+	motorSetting(medianLeft, MOTOR_PIN_LEFT,intensityFactor);
 
   // Middle motor
-  motorSetting(lpfMedianMid,MOTOR_PIN_MID,intensityFactor);
+  motorSetting(medianMid,MOTOR_PIN_MID,intensityFactor);
 
   // Right motor
-  motorSetting(lpfMedianRight,MOTOR_PIN_RIGHT,intensityFactor);
+  motorSetting(medianRight,MOTOR_PIN_RIGHT,intensityFactor);
 
 	Serial.println();
 }
