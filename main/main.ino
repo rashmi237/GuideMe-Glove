@@ -194,22 +194,22 @@ void loop(){
 	if (medianFilterIndex >= MEDIAN_FILTER_WINDOW) {
 		medianFilterIndex = 0;
 	}
-	median = getMedian(medianFilter, MEDIAN_FILTER_WINDOW);
 
-	Serial.print("Unsmoothed: ");
-	Serial.print(distance_left);
-	Serial.print(", Median: ");
-	Serial.print(median);
+
+	//Serial.print("Unsmoothed: ");
+	//Serial.print(distance_left);
+	//Serial.print(", Median: ");
+	//Serial.print(median);
 
 // -- LPF --
-	lpfValue = lpfValue + LPF_ALPHA * (inputValue - lpfValue);
-	Serial.print(", LPF: ");
-	Serial.print(lpfValue);
+	//lpfValue = lpfValue + LPF_ALPHA * (inputValue - lpfValue);
+	//Serial.print(", LPF: ");
+	//Serial.print(lpfValue);
 
 // -- LPF w/ Median --
-	lpfMedian = lpfMedian + LPF_ALPHA * (median - lpfMedian);
-	Serial.print(", LPFMedian: ");
-	Serial.println(lpfMedian);
+	//lpfMedian = lpfMedian + LPF_ALPHA * (median - lpfMedian);
+	//Serial.print(", LPFMedian: ");
+	//Serial.println(lpfMedian);
 
 
 // -- Testing Filter
