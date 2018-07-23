@@ -17,7 +17,7 @@
 #define TRIGGER_PIN_RIGHT  4  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN_RIGHT     3  // Arduino pin tied to echo pin on the ultrasonic sensor.
 
-int MAX_DISTANCE = 200; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm. Can be changed.
+int MAX_DISTANCE; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm. Can be changed.
 
 //Ultrasonic sensor declaration
 NewPing US_LEFT(TRIGGER_PIN_LEFT, ECHO_PIN_LEFT, MAX_DISTANCE); // NewPing setup of pins and maximum distance - US1
@@ -59,6 +59,8 @@ float medianFilterRight[MEDIAN_FILTER_WINDOW];
 
 //Bluetooth
 char* data;
+int recvVibrationValue;
+int recvDetectionDistance;
 
 //Main Methods for main
 #define arr_len(x) (sizeof(x)/sizeof(int))
@@ -86,20 +88,20 @@ bool timer(unsigned long &last_time, unsigned long period) {
   return false;
 }
 
-void motorSetting(int distance, int motorpin, int intensity){
+void motorSetting(int distance, int motorpin, float intensity){
 
 	if(!(distance==501)){ //Checks if signal is recieved
     Serial.print(distance);
     Serial.print(",");
 
 		if(distance< (MAX_DISTANCE/3)){
-			analogWrite(motorpin,Motorlevels[2]);
+			analogWrite(motorpin,Motorlevels[2]*intensity);
 		}
 		else if (distance< (MAX_DISTANCE/3)*2 && distance> (MAX_DISTANCE/3)) {
-			analogWrite(motorpin,Motorlevels[1]);
+			analogWrite(motorpin,Motorlevels[1]*intensity);
 		}
 		else if (distance< MAX_DISTANCE && distance> (MAX_DISTANCE/3)*2) {
-			analogWrite(motorpin,Motorlevels[0]);
+			analogWrite(motorpin,Motorlevels[0]*intensity);
 		}
 		else{
 			analogWrite(motorpin,0);
@@ -130,6 +132,8 @@ void setup() {
 	medianRight = 0;
 	lpfMedian = 0;
 	medianFilterIndex = 0;
+	intensityFactor = 1;
+	MAX_DISTANCE = 200;
 
 	// initialize medianFilter array
 	for (int i = 0; i < MEDIAN_FILTER_WINDOW; i++) {
@@ -146,11 +150,19 @@ void loop(){
 		 data = Serial.read();        //Read the incoming data & store into data
 		 Serial.println(data);          //Print Value inside data in Serial monitor
 
-		 if(data =="V"){              // Checks whether value of data is equal to 1
+		 if(data.indexOf("v") > 0){              // Checks whether value of data is equal to 1
+			 	data.remove(0, 1);
+				recvVibrationValue = data.toInt();
+				if (recvVibrationValue == 0) {intensityFactor = 0.33}
+				if (recvVibrationValue == 1) {intensityFactor = 0.66}
+				if (recvVibrationValue == 2) {intensityFactor = 1.00}
 				Serial.println("Vibration input"); //If value is 1 then LED turns ON
 		 }
 
-		 if(data == "M"){         //  Checks whether value of data is equal to 0
+		 if(data.indexOf("d") > 0){         //  Checks whether value of data is equal to 0
+			 	data.remove(0, 1);
+			 	recvDetectionDistance = data.toFloat();
+				MAX_DISTANCE = recvDetectionDistance * 100;
 				Serial.println("Max distance input");    //If value is 0 then LED turns OFF
 			}
 	}
@@ -186,13 +198,13 @@ void loop(){
 
 	//Motor settings
   // Left motor
-	motorSetting(medianLeft, MOTOR_PIN_LEFT,1234);
+	motorSetting(medianLeft, MOTOR_PIN_LEFT,intensityFactor);
 
   // Middle motor
-  motorSetting(medianMid,MOTOR_PIN_MID,1234);
+  motorSetting(medianMid,MOTOR_PIN_MID,intensityFactor);
 
   // Right motor
-  motorSetting(medianRight,MOTOR_PIN_RIGHT,1234);
+  motorSetting(medianRight,MOTOR_PIN_RIGHT,intensityFactor);
 
 	Serial.println();
 }
