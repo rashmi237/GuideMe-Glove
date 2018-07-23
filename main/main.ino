@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // Example NewPing library sketch that does a ping about 20 times per second.
 // ---------------------------------------------------------------------------
-
+#include <ArduinoSort.h>
 #include <NewPing.h>
 
 // US LEFT
@@ -33,6 +33,7 @@ int distance_right;
 #define MOTOR_PIN_MID  10
 #define MOTOR_PIN_RIGHT 9
 
+//different feedback strengths
 const int Motorlevels [] = {85,170,255};
 
 //battery pin variables
@@ -42,9 +43,43 @@ const float stepVolt = 4.77 / 1024.0;
 //timer Varibales
 static unsigned long previousMillis1;
 
+
+//Filter constants
+const int MEDIAN_FILTER_WINDOW = 25;
+
+
+//Filter variables
+int inputValue = 0;
+float median = 0;
+float lpfMedian = 0;
+float medianFilter[MEDIAN_FILTER_WINDOW];
+int medianFilterIndex = 0;
+
+
+
+
+
+
+
+
+
+
 //Methods
+
+
+// Calculate the median value of the input array
+float getMedian(float input[], int inputSize){
+// sort the inputs
+	float sorted[inputSize];
+	sortArray(input, inputSize);
+// median = middle value of sorted array
+	return input[inputSize/2];
+}
+
+
+
 float batteryMonitorVoltage(int sensorPin){
-	int sensorValue = analogRead(SENSOR_PIN);
+	int sensorValue = analogRead(sensorPin);
 
 	return sensorValue * stepVolt;
 }
@@ -91,11 +126,16 @@ void setup() {
   pinMode(MOTOR_PIN_RIGHT, OUTPUT);
 
 	previousMillis1 = 0;
+
+	// initialize medianFilter array
+	for (int i = 0; i < MEDIAN_FILTER_WINDOW; i++) {
+		medianFilter[i] = 0;
+	}
 }
 
 void loop() {
 
-	//Timer Code
+	//Timer Code - Checks battery status every 6 seconds
 	if(timer(previousMillis1, 6000)){
 		float BatteryValue = batteryMonitorVoltage(SENSOR_PIN);
 		Serial.println(BatteryValue);
@@ -109,14 +149,37 @@ void loop() {
 	distance_mid = US_MID.ping_cm();
   distance_right = US_RIGHT.ping_cm();
 
+// -- Testing Filter
+
+	inputValue = distance_left;
+	medianFilter[medianFilterIndex] = inputValue;
+	medianFilterIndex++;
+	if (medianFilterIndex >= MEDIAN_FILTER_WINDOW) {
+		medianFilterIndex = 0;
+	}
+	median = getMedian(medianFilter, MEDIAN_FILTER_WINDOW);
+
+	Serial.print("Unsmoothed: ");
+	Serial.print(distance_left);
+	Serial.print(", Median ");
+	Serial.println(median);
+
+
+// -- Testing Filter
+
+
+
+
+
+
 
   // Left Sensor
-	motorSetting(distance_left, MOTOR_PIN_LEFT);
+//	motorSetting(distance_left, MOTOR_PIN_LEFT);
 
   // Middle Sensor
-  motorSetting(distance_right,MOTOR_PIN_MID);
+//  motorSetting(distance_right,MOTOR_PIN_MID);
 
   // Right Sensor
-  motorSetting(distance_right,MOTOR_PIN_RIGHT);
-	Serial.println();
+//  motorSetting(distance_right,MOTOR_PIN_RIGHT);
+
 }
