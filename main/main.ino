@@ -40,7 +40,7 @@ float intensityFactor;
 //battery pin variables
 #define SENSOR_PIN  A5
 const float stepVolt = 4.77 / 1024.0;
-const int checkBatteryTime = 6000;
+const int checkBatteryTime = 12000;
 
 //timer Varibales
 static unsigned long previousMillis1;
@@ -153,21 +153,25 @@ void loop(){
 
 	//Bluetooth code
 	if(Serial.available() > 0){      // Send data only when you receive data:
-		 data = Serial.read();        //Read the incoming data & store into data
-		 Serial.println(data);          //Print Value inside data in Serial monitor
+		 data = Serial.readString();        //Read the incoming data & store into data
 
-		 if(data.indexOf("v") > 0){              // Checks whether value of data is equal to 1
+		 Serial.println(data);
+		 //Serial.println(toString(data));          //Print Value inside data in Serial monitor
+
+
+		 if(data.indexOf("v")==0){              // Checks whether value of data is equal to 1
 			 	data.remove(0, 1);
 				recvVibrationValue = data.toInt();
 				if (recvVibrationValue == 0) {intensityFactor = 0.33;}
 				if (recvVibrationValue == 1) {intensityFactor = 0.66;}
 				if (recvVibrationValue == 2) {intensityFactor = 1.00;}
 				Serial.println("Vibration input"); //If value is 1 then LED turns ON
+
 		 }
 
-		 if(data.indexOf("d") > 0){         //  Checks whether value of data is equal to 0
+		 if(data.indexOf("d")==0){         //  Checks whether value of data is equal to 0
 			 	data.remove(0, 1);
-			 	recvDetectionDistance = data.toFloat();
+			 	recvDetectionDistance = data.toInt();
 				MAX_DISTANCE = recvDetectionDistance * 100;
 				Serial.println("Max distance input");    //If value is 0 then LED turns OFF
 			}
@@ -181,7 +185,7 @@ void loop(){
 
 	//Ping Code
 	delay(75); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
-  Serial.print("Median Ping: ");
+  Serial.print("LPF Median Ping: ");
 
   distance_left = US_LEFT.ping_cm();
 	distance_mid = US_MID.ping_cm();
