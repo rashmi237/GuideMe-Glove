@@ -46,6 +46,8 @@ static unsigned long previousMillis1;
 
 //Filter constants
 const int MEDIAN_FILTER_WINDOW = 25;
+const float LPF_ALPHA = 0.05f;
+
 
 
 //Filter variables
@@ -54,6 +56,9 @@ float median = 0;
 float lpfMedian = 0;
 float medianFilter[MEDIAN_FILTER_WINDOW];
 int medianFilterIndex = 0;
+float lpfValue = 0;
+
+
 
 
 
@@ -151,6 +156,7 @@ void loop() {
 
 // -- Testing Filter
 
+// -- MEDIAN FILTER --
 	inputValue = distance_left;
 	medianFilter[medianFilterIndex] = inputValue;
 	medianFilterIndex++;
@@ -161,8 +167,18 @@ void loop() {
 
 	Serial.print("Unsmoothed: ");
 	Serial.print(distance_left);
-	Serial.print(", Median ");
-	Serial.println(median);
+	Serial.print(", Median: ");
+	Serial.print(median);
+
+// -- LPF --
+	lpfValue = lpfValue + LPF_ALPHA * (inputValue - lpfValue);
+	Serial.print(", LPF: ");
+	Serial.print(lpfValue);
+
+// -- LPF w/ Median --
+	lpfMedian = lpfMedian + LPF_ALPHA * (median - lpfMedian);
+	Serial.print(", LPFMedian: ");
+	Serial.println(lpfMedian);
 
 
 // -- Testing Filter
