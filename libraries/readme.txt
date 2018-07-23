@@ -1,1 +1,1 @@
-Download NewPing library using Ardduino library manager
+Download NewPing library using Arduino library manager.
