@@ -17,7 +17,7 @@
 #define TRIGGER_PIN_RIGHT  4  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN_RIGHT     3  // Arduino pin tied to echo pin on the ultrasonic sensor.
 
-int MAX_DISTANCE =400; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm. Can be changed.
+int MAX_DISTANCE =500; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm. Can be changed.
 
 //Ultrasonic sensor declaration
 NewPing US_LEFT(TRIGGER_PIN_LEFT, ECHO_PIN_LEFT, MAX_DISTANCE); // NewPing setup of pins and maximum distance - US1
@@ -48,12 +48,12 @@ static unsigned long previousMillis1;
 
 //Filter constants
 const int MEDIAN_FILTER_WINDOW = 25;
-const float LPF_ALPHA = 0.05f;
+const float LPF_ALPHA = 0.1f;
 
 
 int inputValue;
 float medianLeft, medianMid, medianRight;
-float lpfMedianLeft, lpfMedianMid, lpfMedianRight;
+float lpfMedianLeft, lpfMedianMid, lpfMedianRight, lpfMedianMid2;
 float lpfMedian;
 int medianFilterIndex;
 float medianFilterLeft[MEDIAN_FILTER_WINDOW];
@@ -95,8 +95,8 @@ bool timer(unsigned long &last_time, unsigned long period) {
 void motorSetting(int distance, int motorpin, float intensity){
 
 	if(!(distance==501)){ //Checks if signal is recieved
-    Serial.print(distance);
-    Serial.print(",");
+    // Serial.print(distance);
+    // Serial.print(",");
 
 		if(distance< (MAX_DISTANCE/3)){
 			analogWrite(motorpin,Motorlevels[2]*intensity);
@@ -118,7 +118,7 @@ void motorSetting(int distance, int motorpin, float intensity){
 }
 
 void setup() {
-  Serial.begin(9600); // Open serial monitor at 115200 baud to see ping results.
+  Serial.begin(115200); // Open serial monitor at 115200 baud to see ping results.
   pinMode(MOTOR_PIN_LEFT, OUTPUT);
   pinMode(MOTOR_PIN_MID, OUTPUT);
   pinMode(MOTOR_PIN_RIGHT, OUTPUT);
@@ -134,9 +134,9 @@ void setup() {
 	medianLeft = 0;
 	medianMid = 0;
 	medianRight = 0;
-	lpfMedianLeft = 0;
-	lpfMedianRight = 0;
-	lpfMedianMid = 0;
+	int lpfMedianLeft = 0;
+	int lpfMedianRight = 0;
+	int lpfMedianMid = 0;
 	medianFilterIndex = 0;
 	intensityFactor = 1;
 	MAX_DISTANCE = 400;
@@ -185,7 +185,7 @@ void loop(){
 
 	//Ping Code
 	delay(75); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
-  Serial.print("LPF Median Ping: ");
+  // Serial.print("LPF Median Ping: ");
 
   distance_left = US_LEFT.ping_cm();
 	distance_mid = US_MID.ping_cm();
@@ -231,13 +231,26 @@ void loop(){
 
 	//Motor settings
   // Left motor
-	motorSetting(medianLeft, MOTOR_PIN_LEFT,intensityFactor);
+	motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT,intensityFactor);
 
   // Middle motor
-  motorSetting(medianMid,MOTOR_PIN_MID,intensityFactor);
+  motorSetting(lpfMedianMid,MOTOR_PIN_MID,intensityFactor);
 
   // Right motor
-  motorSetting(medianRight,MOTOR_PIN_RIGHT,intensityFactor);
+  motorSetting(lpfMedianRight,MOTOR_PIN_RIGHT,intensityFactor);
+
+
+	Serial.print(lpfMedianLeft);
+	Serial.print(",");
+	Serial.print(lpfMedianMid);
+	Serial.print(",");
+	Serial.print(lpfMedianRight);
+
+
+
+	// Serial.print(distance_right);
+	// Serial.print(",");
+	// Serial.print(medianRight);
 
 	Serial.println();
 }

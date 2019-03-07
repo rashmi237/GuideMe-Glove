@@ -9,10 +9,10 @@ private int SERIAL_RATE = 9600; // Using same rate as Arduino
 private color BACKGROUND_COLOR = color(0);
 private color AXIS_COLOR = color(255, 127, 0);
 private color INPUT_COLOR = color(255);
-//private color INPUT_STEADY_COLOR = color(255, 0, 127);
-//private color LPF_COLOR = color(0, 127, 255);
+private color INPUT_STEADY_COLOR = color(255, 0, 127);
+private color LPF_COLOR = color(0, 127, 255);
 private color MEDIAN_FILTER_COLOR = color(127, 255, 0);
-//private color LPF_MEDIAN_FILTER_COLOR = color(127, 0, 255);
+private color LPF_MEDIAN_FILTER_COLOR = color(127, 0, 255);
 private int WINDOW_WIDTH = 1024; // Remember to change size() function as well!
 private int WINDOW_HEIGHT = 768;
 private int ORIGIN_X = 80;
@@ -58,7 +58,7 @@ void setup() {
   }
 }
 
-float getMedian(float[] inputd) {
+float getMedian(float[] input) {
   //float[] sorted = new float[input.length];
   //for (int i = 0; i < input.length; i++) {
   //  float[] sorted[i] = input[i];
