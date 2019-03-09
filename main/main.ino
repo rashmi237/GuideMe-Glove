@@ -48,7 +48,7 @@ static unsigned long previousMillis1;
 
 //Filter constants
 const int MEDIAN_FILTER_WINDOW = 25;
-const float LPF_ALPHA = 0.1f;
+const float LPF_ALPHA = 0.5f;
 
 
 int inputValue;
@@ -179,12 +179,15 @@ void loop(){
 
 	//Timer Code
 	if(timer(previousMillis1, checkBatteryTime)){
-		float BatteryValue = batteryMonitorVoltage(SENSOR_PIN);
-		Serial.println(BatteryValue);
+		float batteryValue = batteryMonitorVoltage(SENSOR_PIN);
+		if (batteryValue < 3){
+			// below 3, battery not connected
+			Serial.println(batteryValue);
+		};
   }
 
 	//Ping Code
-	delay(75); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
+	delay(35); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
   // Serial.print("LPF Median Ping: ");
 
   distance_left = US_LEFT.ping_cm();
