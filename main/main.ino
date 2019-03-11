@@ -94,7 +94,6 @@ bool timer(unsigned long &last_time, unsigned long period) {
 }
 
 void motorSetting(int distance, int motorpin, float intensity){
-
 	if(!(distance==0)){ //Checks if signal is recieved
     // Serial.print(distance);
     // Serial.print(",");
