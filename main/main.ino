@@ -69,6 +69,7 @@ int recvDetectionDistance;
 //Main Methods for main
 #define arr_len(x) (sizeof(x)/sizeof(int))
 
+////*Methods*////
 float getMedian(float input[], int inputSize){ // Calculate the median value of the input array
 	float sorted[inputSize]; // sort the inputs
 	sortArray(input, inputSize);
@@ -94,29 +95,65 @@ bool timer(unsigned long &last_time, unsigned long period) {
 
 void motorSetting(int distance, int motorpin, float intensity){
 
-	if(!(distance==501)){ //Checks if signal is recieved
+	if(!(distance==0)){ //Checks if signal is recieved
     // Serial.print(distance);
     // Serial.print(",");
 
 		if(distance< (MAX_DISTANCE/3)){
-			analogWrite(motorpin,Motorlevels[2]*intensity);
+			analogWrite(motorpin, Motorlevels[2] * intensity);
 		}
 		else if (distance< (MAX_DISTANCE/3)*2 && distance> (MAX_DISTANCE/3)) {
-			analogWrite(motorpin,Motorlevels[1]*intensity);
+			analogWrite(motorpin, Motorlevels[1] * intensity);
 		}
 		else if (distance< MAX_DISTANCE && distance> (MAX_DISTANCE/3)*2) {
-			analogWrite(motorpin,Motorlevels[0]*intensity);
+			analogWrite(motorpin, Motorlevels[0] * intensity);
 		}
 		else{
-			analogWrite(motorpin,0);
+			analogWrite(motorpin, 0);
 		}
   }
 	else{
     	Serial.print("No Signal,");
-			analogWrite(motorpin,0);
+			analogWrite(motorpin, 0);
   }
 }
 
+void serialCheck(){
+	//Bluetooth code
+	if(Serial.available() > 0){      // Send data only when you receive data:
+		 data = Serial.readString();        //Read the incoming data & store into data
+
+		 Serial.println(data);
+		 //Serial.println(toString(data));          //Print Value inside data in Serial monitor
+
+
+		 if(data.indexOf("v")==0){              // Checks whether value of data is equal to 1
+			 	data.remove(0, 1);
+				recvVibrationValue = data.toInt();
+				if (recvVibrationValue == 0) {intensityFactor = 0.33;}
+				if (recvVibrationValue == 1) {intensityFactor = 0.66;}
+				if (recvVibrationValue == 2) {intensityFactor = 1.00;}
+				Serial.println("Vibration input"); //If value is 1 then LED turns ON
+
+		 }
+
+		 if(data.indexOf("d")==0){         //  Checks whether value of data is equal to 0
+			 	data.remove(0, 1);
+			 	recvDetectionDistance = data.toInt();
+				MAX_DISTANCE = recvDetectionDistance * 100;
+				Serial.println("Max distance input");    //If value is 0 then LED turns OFF
+			}
+	}
+}
+
+void batteryCheck(){
+	float batteryValue = batteryMonitorVoltage(SENSOR_PIN);
+			if (batteryValue < 3){
+				// below 3, battery not connected
+				Serial.println(batteryValue);
+			};
+}
+/////*Main code*/////
 void setup() {
   Serial.begin(115200); // Open serial monitor at 115200 baud to see ping results.
   pinMode(MOTOR_PIN_LEFT, OUTPUT);
@@ -151,39 +188,11 @@ void setup() {
 
 void loop(){
 
-	//Bluetooth code
-	if(Serial.available() > 0){      // Send data only when you receive data:
-		 data = Serial.readString();        //Read the incoming data & store into data
-
-		 Serial.println(data);
-		 //Serial.println(toString(data));          //Print Value inside data in Serial monitor
-
-
-		 if(data.indexOf("v")==0){              // Checks whether value of data is equal to 1
-			 	data.remove(0, 1);
-				recvVibrationValue = data.toInt();
-				if (recvVibrationValue == 0) {intensityFactor = 0.33;}
-				if (recvVibrationValue == 1) {intensityFactor = 0.66;}
-				if (recvVibrationValue == 2) {intensityFactor = 1.00;}
-				Serial.println("Vibration input"); //If value is 1 then LED turns ON
-
-		 }
-
-		 if(data.indexOf("d")==0){         //  Checks whether value of data is equal to 0
-			 	data.remove(0, 1);
-			 	recvDetectionDistance = data.toInt();
-				MAX_DISTANCE = recvDetectionDistance * 100;
-				Serial.println("Max distance input");    //If value is 0 then LED turns OFF
-			}
-	}
+	serialCheck();
 
 	//Timer Code
 	if(timer(previousMillis1, checkBatteryTime)){
-		float batteryValue = batteryMonitorVoltage(SENSOR_PIN);
-		if (batteryValue < 3){
-			// below 3, battery not connected
-			Serial.println(batteryValue);
-		};
+		batteryCheck();
   }
 
 	//Ping Code
@@ -196,9 +205,9 @@ void loop(){
 
 	//Filter Code
 	//inputValue = distance_left;
-	medianFilterLeft[medianFilterIndex] = distance_left;
-	medianFilterMid[medianFilterIndex] = distance_mid;
-	medianFilterRight[medianFilterIndex] = distance_right;
+	if(distance_left != 0){ medianFilterLeft[medianFilterIndex] = distance_left;}
+	if(distance_mid != 0){ medianFilterMid[medianFilterIndex] = distance_mid;}
+	if(distance_right != 0) {medianFilterRight[medianFilterIndex] = distance_right;}
 
 	medianFilterIndex++;
 	if (medianFilterIndex >= MEDIAN_FILTER_WINDOW) {
@@ -230,14 +239,12 @@ void loop(){
 
 // -- Testing Filter
 
-
-
 	//Motor settings
   // Left motor
 	motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT,intensityFactor);
 
   // Middle motor
-  motorSetting(lpfMedianMid,MOTOR_PIN_MID,intensityFactor);
+  motorSetting(380,MOTOR_PIN_MID,intensityFactor);
 
   // Right motor
   motorSetting(lpfMedianRight,MOTOR_PIN_RIGHT,intensityFactor);
@@ -248,7 +255,6 @@ void loop(){
 	Serial.print(lpfMedianMid);
 	Serial.print(",");
 	Serial.print(lpfMedianRight);
-
 
 
 	// Serial.print(distance_right);
