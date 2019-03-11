@@ -118,7 +118,7 @@ void motorSetting(int distance, int motorpin, float intensity){
 }
 
 void setup() {
-  Serial.begin(115200); // Open serial monitor at 115200 baud to see ping results.
+  Serial.begin(9600); // Open serial monitor at 115200 baud to see ping results.
   pinMode(MOTOR_PIN_LEFT, OUTPUT);
   pinMode(MOTOR_PIN_MID, OUTPUT);
   pinMode(MOTOR_PIN_RIGHT, OUTPUT);
@@ -155,6 +155,7 @@ void loop(){
 	if(Serial.available() > 0){      // Send data only when you receive data:
 		 data = Serial.readString();        //Read the incoming data & store into data
 
+     Serial.print("Data from Bluetooth: ");
 		 Serial.println(data);
 		 //Serial.println(toString(data));          //Print Value inside data in Serial monitor
 
@@ -162,20 +163,64 @@ void loop(){
 		 if(data.indexOf("v")==0){              // Checks whether value of data is equal to 1
 			 	data.remove(0, 1);
 				recvVibrationValue = data.toInt();
-				if (recvVibrationValue == 0) {intensityFactor = 0.33;}
-				if (recvVibrationValue == 1) {intensityFactor = 0.66;}
-				if (recvVibrationValue == 2) {intensityFactor = 1.00;}
-				Serial.println("Vibration input"); //If value is 1 then LED turns ON
+				switch (recvVibrationValue) {
+				  case 0:
+				    intensityFactor = 0.33;
+				    break;
+					case 1:
+						intensityFactor = 0.66;
+						break;
+					case 2:
+						intensityFactor = 1;
+						break;
+					default:
+						intensityFactor = 1;
+				// if (recvVibrationValue == 0) {intensityFactor = 0.33;}
+				// if (recvVibrationValue == 1) {intensityFactor = 0.66;}
+				// if (recvVibrationValue == 2) {intensityFactor = 1.00;}
+				Serial.print("Vibration input: "); //If value is 1 then LED turns ON
+				Serial.println(recvVibrationValue);
 
 		 }
 
 		 if(data.indexOf("d")==0){         //  Checks whether value of data is equal to 0
 			 	data.remove(0, 1);
 			 	recvDetectionDistance = data.toInt();
-				MAX_DISTANCE = recvDetectionDistance * 100;
-				Serial.println("Max distance input");    //If value is 0 then LED turns OFF
+				switch (recvDetectionDistance) {
+				  case 0:
+				    MAX_DISTANCE = 100;
+				    break;
+					case 1:
+						MAX_DISTANCE = 150;
+						break;
+					case 2:
+						MAX_DISTANCE = 200;
+						break;
+					case 3:
+						MAX_DISTANCE = 250;
+						break;
+					case 4:
+						MAX_DISTANCE = 300;
+						break;
+					case 5:
+						MAX_DISTANCE = 350;
+						break;
+					case 6:
+						MAX_DISTANCE = 400;
+						break;
+					case 7:
+						MAX_DISTANCE = 450;
+						break;
+				  default:
+				    MAX_DISTANCE = 400;
+				    break;
+				}
+				//MAX_DISTANCE = recvDetectionDistance * 100;
+				Serial.print("Max distance input: ");    //If value is 0 then LED turns OFF
+				Serial.println(MAX_DISTANCE);
 			}
 	}
+
 
 	//Timer Code
 	if(timer(previousMillis1, checkBatteryTime)){
@@ -237,7 +282,7 @@ void loop(){
 	motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT,intensityFactor);
 
   // Middle motor
-  motorSetting(lpfMedianMid,MOTOR_PIN_MID,intensityFactor);
+  motorSetting(380,MOTOR_PIN_MID,intensityFactor);
 
   // Right motor
   motorSetting(lpfMedianRight,MOTOR_PIN_RIGHT,intensityFactor);
