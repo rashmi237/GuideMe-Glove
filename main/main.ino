@@ -113,7 +113,7 @@ void motorSetting(int distance, int motorpin, float intensity){
   }
 	else{
     	//Serial.print("No Signal,");
-			analogWrite(motorpin, 0);
+			analogWrite(motorpin, 0 );
   }
 }
 
@@ -139,7 +139,7 @@ void serialCheck(){
 						intensityFactor = defValue;
 						break;
 					case 2:
-						intensityFactor = float(defValue*2);
+						intensityFactor = float(defValue*1.5);
 						break;
 					case 3:
 						intensityFactor = 0.0;
@@ -198,7 +198,7 @@ void batteryCheck(){
 			//if (batteryValue > 3){
 				// below 3, battery not connected
 
-				Serial.println((String)batteryValue);
+				Serial.println("start" + (String)batteryValue + "end");
 				//Serial.write((byte)batteryValue);
 			//}
 }
@@ -224,7 +224,8 @@ void setup() {
 	int lpfMedianRight = 0;
 	int lpfMedianMid = 0;
 	medianFilterIndex = 0;
-	defValue = 0.5;
+	//max value of defValue is 0.66, don't increase
+	defValue = 0.66;
 	intensityFactor = defValue;
 	MAX_DISTANCE = 400;
 
@@ -299,6 +300,7 @@ void loop(){
   // Right motor
   motorSetting(lpfMedianRight,MOTOR_PIN_RIGHT,intensityFactor);
 
+	//just commented this
 	Serial.print(lpfMedianLeft);
 	Serial.print(",");
 	Serial.print(lpfMedianMid);
@@ -310,5 +312,6 @@ void loop(){
 	// Serial.print(",");
 	// Serial.print(medianRight);
 
+	//just commented this
 	Serial.println();
 }
