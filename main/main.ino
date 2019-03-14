@@ -41,10 +41,11 @@ float defValue;
 //battery pin variables
 #define SENSOR_PIN  A5
 const float stepVolt = 4.77 / 1024.0;
-const int checkBatteryTime = 12000;
+const int checkBatteryTime = 5000;
 
 //timer Varibales
-static unsigned long previousMillis1;
+static unsigned long previousMillisBattery;
+static unsigned long previousMillisFreq;
 
 //Filter constants
 const int MEDIAN_FILTER_WINDOW = 25;
@@ -121,7 +122,6 @@ void motorSetting(int distance, int motorpin, float intensity, int count){
 }
 
 void serialCheck(){
-	//Bluetooth code
 	//Bluetooth code
 	if(Serial.available() > 0){      // Send data only when you receive data:
 		 data = Serial.readString();        //Read the incoming data & store into data
@@ -201,7 +201,7 @@ void batteryCheck(){
 			//if (batteryValue > 3){
 				// below 3, battery not connected
 
-				Serial.println("start" + (String)batteryValue + "end");
+				Serial.println("S" + (String) batteryValue);
 				//Serial.write((byte)batteryValue);
 			//}
 }
@@ -213,7 +213,8 @@ void setup() {
   pinMode(MOTOR_PIN_RIGHT, OUTPUT);
 
 	//Timer initialize
-	previousMillis1 = 0;
+	previousMillisBattery = 0;
+	previousMillisFreq = 0;
 
 	//Bluetooth
 	data = "";
@@ -248,7 +249,7 @@ void loop(){
 	serialCheck();
 
 	//Timer Code
-	if(timer(previousMillis1, checkBatteryTime)){
+	if(timer(previousMillisBattery, checkBatteryTime)){
 		batteryCheck();
   }
 
@@ -322,25 +323,25 @@ void loop(){
 	//Motor settings
   // Left motor
 
-	if(timer(previousMillis1, checkFreq)){
-		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT,0,nosig_count_left);
-		motorSetting(lpfMedianMid,MOTOR_PIN_MID,0,nosig_count_mid);
-		motorSetting(lpfMedianRight,MOTOR_PIN_RIGHT,0,nosig_count_right);
+	if(timer(previousMillisFreq, checkFreq)){
+		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT, 0, nosig_count_left);
+		motorSetting(lpfMedianMid, MOTOR_PIN_MID, 0, nosig_count_mid);
+		motorSetting(lpfMedianRight, MOTOR_PIN_RIGHT, 0, nosig_count_right);
 	}
 
 	else
 	{
-		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT,intensityFactor,nosig_count_left);
-		motorSetting(lpfMedianMid,MOTOR_PIN_MID,intensityFactor,nosig_count_mid);
-		motorSetting(lpfMedianRight,MOTOR_PIN_RIGHT,intensityFactor,nosig_count_right);
+		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT, intensityFactor, nosig_count_left);
+		motorSetting(lpfMedianMid, MOTOR_PIN_MID, intensityFactor, nosig_count_mid);
+		motorSetting(lpfMedianRight, MOTOR_PIN_RIGHT, intensityFactor, nosig_count_right);
 	}
 
 	//just commented this
-	Serial.print(lpfMedianLeft);
-	Serial.print(",");
-	Serial.print(lpfMedianMid);
-	Serial.print(",");
-	Serial.print(lpfMedianRight);
+	//Serial.print(lpfMedianLeft);
+	//Serial.print(",");
+	//Serial.print(lpfMedianMid);
+	//Serial.print(",");
+	//Serial.print(lpfMedianRight);
 
 
 	// Serial.print(distance_right);
@@ -348,5 +349,5 @@ void loop(){
 	// Serial.print(medianRight);
 
 	//just commented this
-	Serial.println();
+	//Serial.println();
 }
