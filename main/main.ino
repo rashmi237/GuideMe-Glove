@@ -50,10 +50,13 @@ static unsigned long previousMillis1;
 const int MEDIAN_FILTER_WINDOW = 25;
 const float LPF_ALPHA = 0.5f;
 
+const int checkFreq = 1000;
+
 
 int inputValue;
 float medianLeft, medianMid, medianRight;
 float lpfMedianLeft, lpfMedianMid, lpfMedianRight;
+int nosig_count_left, nosig_count_mid, nosig_count_right;
 float lpfMedian;
 int medianFilterIndex;
 float medianFilterLeft[MEDIAN_FILTER_WINDOW];
@@ -93,8 +96,8 @@ bool timer(unsigned long &last_time, unsigned long period) {
   return false;
 }
 
-void motorSetting(int distance, int motorpin, float intensity){
-	if(!(distance==0)){ //Checks if signal is recieved
+void motorSetting(int distance, int motorpin, float intensity, int count){
+	if(!(distance==0) && count < 25){ //Checks if signal is recieved
     // Serial.print(distance);
     // Serial.print(",");
 
@@ -220,9 +223,12 @@ void setup() {
 	medianLeft = 0;
 	medianMid = 0;
 	medianRight = 0;
-	int lpfMedianLeft = 0;
-	int lpfMedianRight = 0;
-	int lpfMedianMid = 0;
+	lpfMedianLeft = 0;
+	lpfMedianRight = 0;
+	lpfMedianMid = 0;
+	nosig_count_left = 0;
+	nosig_count_mid = 0;
+	nosig_count_right = 0;
 	medianFilterIndex = 0;
 	//max value of defValue is 0.66, don't increase
 	defValue = 0.66;
@@ -246,6 +252,8 @@ void loop(){
 		batteryCheck();
   }
 
+
+
 	//Ping Code
 	delay(35); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
   // Serial.print("LPF Median Ping: ");
@@ -256,9 +264,30 @@ void loop(){
 
 	//Filter Code
 	//inputValue = distance_left;
-	if(distance_left != 0){ medianFilterLeft[medianFilterIndex] = distance_left;}
-	if(distance_mid != 0){ medianFilterMid[medianFilterIndex] = distance_mid;}
-	if(distance_right != 0) {medianFilterRight[medianFilterIndex] = distance_right;}
+	if(distance_left != 0){
+			medianFilterLeft[medianFilterIndex] = distance_left;
+			nosig_count_left = 0;
+	}
+	else{
+		nosig_count_left++;
+	}
+
+
+	if(distance_mid != 0){
+		medianFilterMid[medianFilterIndex] = distance_mid;
+		nosig_count_mid = 0; // at the first instance of regaining signal after a string of zeroes, the nosignal counter goes back to 0
+	}
+	else{
+		nosig_count_mid++; // keep track of the number of consecutive nosignals (0s)
+	}
+
+	if(distance_right != 0) {
+		medianFilterRight[medianFilterIndex] = distance_right;
+		nosig_count_right = 0;
+	}
+	else{
+		nosig_count_right++;
+	}
 
 	medianFilterIndex++;
 	if (medianFilterIndex >= MEDIAN_FILTER_WINDOW) {
@@ -292,13 +321,19 @@ void loop(){
 
 	//Motor settings
   // Left motor
-	motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT,intensityFactor);
 
-  // Middle motor
-  motorSetting(lpfMedianMid,MOTOR_PIN_MID,intensityFactor);
+	if(timer(previousMillis1, checkFreq)){
+		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT,0,nosig_count_left);
+		motorSetting(lpfMedianMid,MOTOR_PIN_MID,0,nosig_count_mid);
+		motorSetting(lpfMedianRight,MOTOR_PIN_RIGHT,0,nosig_count_right);
+	}
 
-  // Right motor
-  motorSetting(lpfMedianRight,MOTOR_PIN_RIGHT,intensityFactor);
+	else
+	{
+		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT,intensityFactor,nosig_count_left);
+		motorSetting(lpfMedianMid,MOTOR_PIN_MID,intensityFactor,nosig_count_mid);
+		motorSetting(lpfMedianRight,MOTOR_PIN_RIGHT,intensityFactor,nosig_count_right);
+	}
 
 	//just commented this
 	Serial.print(lpfMedianLeft);
