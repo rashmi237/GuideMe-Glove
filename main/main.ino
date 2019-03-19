@@ -28,6 +28,10 @@ int distance_left;
 int distance_mid;
 int distance_right;
 
+int checkFreqMid;
+int checkFreqRight;
+int checkFreqLeft;
+
 //Motor Pins
 #define MOTOR_PIN_LEFT 11
 #define MOTOR_PIN_MID  10
@@ -51,7 +55,7 @@ static unsigned long previousMillisFreq;
 const int MEDIAN_FILTER_WINDOW = 25;
 const float LPF_ALPHA = 0.5f;
 
-const int checkFreq = 1000;
+// const int checkFreq = 1000;
 
 
 int inputValue;
@@ -205,6 +209,25 @@ void batteryCheck(){
 				//Serial.write((byte)batteryValue);
 			//}
 }
+
+
+int getFreq(int dist){
+
+	if(distance< (MAX_DISTANCE/3)){
+		return 250;
+	}
+	else if (distance< (MAX_DISTANCE/3)*2 && distance> (MAX_DISTANCE/3)) {
+		return 500;
+	}
+	else if (distance< MAX_DISTANCE && distance> (MAX_DISTANCE/3)*2) {
+		return 1000;
+	}
+}
+
+
+
+
+
 /////*Main code*/////
 void setup() {
   Serial.begin(9600); // Open serial monitor at 115200 baud to see ping results.
@@ -322,19 +345,48 @@ void loop(){
 
 	//Motor settings
   // Left motor
+	// condition to check dist and assign req
 
-	if(timer(previousMillisFreq, checkFreq)){
+	checkFreqLeft = getFreq(lpfMedianLeft);
+	checkFreqMid = getFreq(lpfMedianMid);
+	checkFreqRight = getFreq(lpfMedianRight);
+
+
+	if(timer(previousMillisFreq, checkFreqLeft)){
 		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT, 0, nosig_count_left);
+	}
+	else{
+		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT, intensityFactor, nosig_count_left);
+	}
+
+	if(timer(previousMillisFreq, checkFreqMid)){
 		motorSetting(lpfMedianMid, MOTOR_PIN_MID, 0, nosig_count_mid);
+	}
+	else{
+		motorSetting(lpfMedianMid, MOTOR_PIN_MID, intensityFactor, nosig_count_mid);
+	}
+
+	if(timer(previousMillisFreq, checkFreqRight)){
 		motorSetting(lpfMedianRight, MOTOR_PIN_RIGHT, 0, nosig_count_right);
 	}
-
-	else
-	{
-		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT, intensityFactor, nosig_count_left);
-		motorSetting(lpfMedianMid, MOTOR_PIN_MID, intensityFactor, nosig_count_mid);
+	else{
 		motorSetting(lpfMedianRight, MOTOR_PIN_RIGHT, intensityFactor, nosig_count_right);
 	}
+
+
+
+	// if(timer(previousMillisFreq, checkFreq)){
+	// 	motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT, 0, nosig_count_left);
+	// 	motorSetting(lpfMedianMid, MOTOR_PIN_MID, 0, nosig_count_mid);
+	// 	motorSetting(lpfMedianRight, MOTOR_PIN_RIGHT, 0, nosig_count_right);
+	// }
+	//
+	// else
+	// {
+	// 	motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT, intensityFactor, nosig_count_left);
+	// 	motorSetting(lpfMedianMid, MOTOR_PIN_MID, intensityFactor, nosig_count_mid);
+	// 	motorSetting(lpfMedianRight, MOTOR_PIN_RIGHT, intensityFactor, nosig_count_right);
+	// }
 
 	//just commented this
 	//Serial.print(lpfMedianLeft);
