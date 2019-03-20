@@ -45,7 +45,7 @@ float defValue;
 //battery pin variables
 #define SENSOR_PIN  A5
 const float stepVolt = 4.77 / 1024.0;
-const int checkBatteryTime = 5000;
+const int checkBatteryTime = 12000;
 
 //timer Varibales
 static unsigned long previousMillisBattery;
@@ -205,7 +205,8 @@ void batteryCheck(){
 			//if (batteryValue > 3){
 				// below 3, battery not connected
 
-				Serial.println("S" + (String) batteryValue);
+				String battString = "S" + (String) batteryValue;
+				Serial.println(battString);
 				//Serial.write((byte)batteryValue);
 			//}
 }
@@ -279,7 +280,7 @@ void loop(){
 
 
 	//Ping Code
-	delay(35); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
+	delay(50); // Wait 50ms between pings (about 20 pings/sec). 29ms should be the shortest delay between pings.
   // Serial.print("LPF Median Ping: ");
 
   distance_left = US_LEFT.ping_cm();
@@ -389,17 +390,21 @@ void loop(){
 	// }
 
 	//just commented this
-	//Serial.print(lpfMedianLeft);
-	//Serial.print(",");
-	//Serial.print(lpfMedianMid);
-	//Serial.print(",");
-	//Serial.print(lpfMedianRight);
+	Serial.print(lpfMedianLeft);
+	Serial.print(",");
+	Serial.print(lpfMedianMid);
+	Serial.print(",");
+	Serial.print(lpfMedianRight);
 
 
-	// Serial.print(distance_right);
-	// Serial.print(",");
+	Serial.print("	RAW: ");
+	Serial.print(distance_left);
+	Serial.print(",");
+	Serial.print(distance_mid);
+	Serial.print(",");
+	Serial.print(distance_right);
 	// Serial.print(medianRight);
 
-	//just commented this
-	//Serial.println();
+	// just commented this
+	Serial.println();
 }
