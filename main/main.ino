@@ -212,7 +212,7 @@ void batteryCheck(){
 }
 
 
-int getFreq(int dist){
+int getFreq(int distance){
 
 	if(distance< (MAX_DISTANCE/3)){
 		return 250;
@@ -258,7 +258,7 @@ void setup() {
 	//max value of defValue is 0.66, don't increase
 	defValue = 0.66;
 	intensityFactor = defValue;
-	MAX_DISTANCE = 400;
+	MAX_DISTANCE = 100;
 
 	// initialize medianFilter array
 	for (int i = 0; i < MEDIAN_FILTER_WINDOW; i++) {
