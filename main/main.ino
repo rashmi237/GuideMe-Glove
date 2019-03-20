@@ -17,7 +17,7 @@
 #define TRIGGER_PIN_RIGHT  4  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN_RIGHT     3  // Arduino pin tied to echo pin on the ultrasonic sensor.
 
-int MAX_DISTANCE =500; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm. Can be changed.
+int MAX_DISTANCE = 500; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm. Can be changed.
 
 //Ultrasonic sensor declaration
 NewPing US_LEFT(TRIGGER_PIN_LEFT, ECHO_PIN_LEFT, MAX_DISTANCE); // NewPing setup of pins and maximum distance - US1
@@ -31,6 +31,10 @@ int distance_right;
 int checkFreqMid;
 int checkFreqRight;
 int checkFreqLeft;
+
+bool flagLeft;
+bool flagMid;
+bool flagRight;
 
 //Motor Pins
 #define MOTOR_PIN_LEFT 11
@@ -49,11 +53,13 @@ const int checkBatteryTime = 12000;
 
 //timer Varibales
 static unsigned long previousMillisBattery;
-static unsigned long previousMillisFreq;
+static unsigned long previousMillisFreqLeft;
+static unsigned long previousMillisFreqMid;
+static unsigned long previousMillisFreqRight;
 
 //Filter constants
 const int MEDIAN_FILTER_WINDOW = 25;
-const float LPF_ALPHA = 0.5f;
+const float LPF_ALPHA = 0.75f;
 
 // const int checkFreq = 1000;
 
@@ -109,10 +115,10 @@ void motorSetting(int distance, int motorpin, float intensity, int count){
 		if(distance< (MAX_DISTANCE/3)){
 			analogWrite(motorpin, Motorlevels[2] * intensity);
 		}
-		else if (distance< (MAX_DISTANCE/3)*2 && distance> (MAX_DISTANCE/3)) {
+		else if (distance < (MAX_DISTANCE/3)*2 && distance > (MAX_DISTANCE/3)) {
 			analogWrite(motorpin, Motorlevels[1] * intensity);
 		}
-		else if (distance< MAX_DISTANCE && distance> (MAX_DISTANCE/3)*2) {
+		else if (distance < MAX_DISTANCE && distance > (MAX_DISTANCE/3)*2) {
 			analogWrite(motorpin, Motorlevels[0] * intensity);
 		}
 		else{
@@ -212,16 +218,19 @@ void batteryCheck(){
 }
 
 
-int getFreq(int distance){
+int getFreq(float distance){
 
-	if(distance< (MAX_DISTANCE/3)){
+	if(distance < (MAX_DISTANCE/3)){
 		return 250;
 	}
-	else if (distance< (MAX_DISTANCE/3)*2 && distance> (MAX_DISTANCE/3)) {
+	else if (distance < (MAX_DISTANCE/3)*2 && distance > (MAX_DISTANCE/3)) {
 		return 500;
 	}
-	else if (distance< MAX_DISTANCE && distance> (MAX_DISTANCE/3)*2) {
-		return 1000;
+	else if (distance < MAX_DISTANCE && distance > (MAX_DISTANCE/3)*2) {
+		return 750;
+	}
+	else {
+		return  10000;
 	}
 }
 
@@ -238,7 +247,17 @@ void setup() {
 
 	//Timer initialize
 	previousMillisBattery = 0;
-	previousMillisFreq = 0;
+	previousMillisFreqLeft = 0;
+	previousMillisFreqMid = 0;
+	previousMillisFreqRight = 0;
+
+	checkFreqLeft = 10000;
+	checkFreqMid = 10000;
+	checkFreqRight = 10000;
+
+	flagLeft = false;
+	flagMid = false;
+	flagRight = false;
 
 	//Bluetooth
 	data = "";
@@ -290,13 +309,12 @@ void loop(){
 	//Filter Code
 	//inputValue = distance_left;
 	if(distance_left != 0){
-			medianFilterLeft[medianFilterIndex] = distance_left;
-			nosig_count_left = 0;
+		medianFilterLeft[medianFilterIndex] = distance_left;
+		nosig_count_left = 0;
 	}
 	else{
 		nosig_count_left++;
 	}
-
 
 	if(distance_mid != 0){
 		medianFilterMid[medianFilterIndex] = distance_mid;
@@ -353,28 +371,35 @@ void loop(){
 	checkFreqRight = getFreq(lpfMedianRight);
 
 
-	if(timer(previousMillisFreq, checkFreqLeft)){
-		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT, 0, nosig_count_left);
-	}
-	else{
-		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT, intensityFactor, nosig_count_left);
+	if(timer(previousMillisFreqMid, checkFreqMid)){
+		flagMid = !flagMid;
 	}
 
-	if(timer(previousMillisFreq, checkFreqMid)){
-		motorSetting(lpfMedianMid, MOTOR_PIN_MID, 0, nosig_count_mid);
+	if(timer(previousMillisFreqRight, checkFreqRight)){
+		flagRight = !flagRight;
 	}
-	else{
+
+	if(timer(previousMillisFreqLeft, checkFreqLeft)){
+		flagLeft = !flagLeft;
+	}
+
+	if (flagMid) {
+		motorSetting(lpfMedianMid, MOTOR_PIN_MID, 0, nosig_count_mid);
+	} else {
 		motorSetting(lpfMedianMid, MOTOR_PIN_MID, intensityFactor, nosig_count_mid);
 	}
 
-	if(timer(previousMillisFreq, checkFreqRight)){
+	if (flagRight) {
 		motorSetting(lpfMedianRight, MOTOR_PIN_RIGHT, 0, nosig_count_right);
-	}
-	else{
+	} else {
 		motorSetting(lpfMedianRight, MOTOR_PIN_RIGHT, intensityFactor, nosig_count_right);
 	}
 
-
+	if (flagLeft) {
+		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT, 0, nosig_count_left);
+	} else {
+		motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT, intensityFactor, nosig_count_left);
+	}
 
 	// if(timer(previousMillisFreq, checkFreq)){
 	// 	motorSetting(lpfMedianLeft, MOTOR_PIN_LEFT, 0, nosig_count_left);
@@ -397,12 +422,12 @@ void loop(){
 	Serial.print(lpfMedianRight);
 
 
-	Serial.print("	RAW: ");
-	Serial.print(distance_left);
-	Serial.print(",");
-	Serial.print(distance_mid);
-	Serial.print(",");
-	Serial.print(distance_right);
+	// Serial.print("	RAW: ");
+	// Serial.print(distance_left);
+	// Serial.print(",");
+	// Serial.print(distance_mid);
+	// Serial.print(",");
+	// Serial.print(distance_right);
 	// Serial.print(medianRight);
 
 	// just commented this
